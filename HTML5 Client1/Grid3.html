@@ -1,0 +1,270 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <style>
+        .myCanvas {
+            width: 600px;
+            height: 500px;
+        }
+
+        .show {
+            position: fixed;
+            left: 100px;
+            top: 100px;
+        }
+
+            .show div {
+                display: inline;
+                background-color: yellow;
+            }
+    </style>
+    <title></title>
+</head>
+<body>
+    <canvas id="myCanvas"></canvas>
+    <div id="myConsole" class="show">
+        X:<div id="scrollX">aa</div>
+        Y:<div id="scrollY">bb</div>
+        Posit:<div id="Pos">pp</div>
+    </div>
+</body>
+</html>
+<script = type="text/javascript">
+    var Keys = {
+        UP: 38,
+        DOWN: 40,
+        LEFT: 37,
+        RIGHT: 39
+    }
+
+    var tile = {
+        width: 16,
+        heigth: 16,
+        targetWidth: 32,
+        targetHeight: 32,
+        borderWidth:1
+    }
+
+    var background = function () {
+        this.img = new Image();
+        this.img.src = "Images/Sprite/Mario/tiles.png";
+        this.LT = { x: 151, y: 21 };
+        this.RB = { x: 235, y: 106 };
+
+        this.tile = tile;
+
+        this.colNum = 5;
+        this.rowTotal = 300;
+        this.colTotal = 30;
+        this.tileMap = [];
+        this.scroll = { x: 0, y: 0 };
+    }
+
+    background.prototype.initialize = function () {
+        for (var r = 0; r < this.rowTotal; r++) {
+            this.tileMap[r] = [];
+            for (var c = 0; c < this.colTotal; c++) {
+                this.tileMap[r][c] = 0;
+            }
+        }
+    }
+
+    background.prototype.setGround = function (fromRow,fromCol,toRow,toCol) {
+        for (var r = fromRow; r <= toRow; r++) {
+            for (var c = fromCol; c <= toCol; c++) {
+                this.tileMap[r][c] = 7;
+            }
+        }
+
+
+    }
+
+
+    background.prototype.getTile = function (i) {
+        var x = i % 5; 
+        var y = Math.floor(i / 5);
+        x = this.LT.x + x * this.tile.width + this.tile.borderWidth * x + this.tile.borderWidth;
+        y = this.LT.y + y * this.tile.heigth + this.tile.borderWidth * y + this.tile.borderWidth;
+        return { offsetX: x, offsetY: y };
+    }
+
+    background.prototype.drawMap= function(c,startRow,startCol,endRow,endCol){
+        c.fillStyle = "skyblue";
+        c.globalAlpha = 0.0;
+        c.fillRect(0, 0, canvas.width, canvas.height);
+        c.globalAlpha = 1;
+        c.strokeStyle = "blue";
+        c.fillStyle = "gray";
+
+
+        for (var row = startRow; row < endRow; row++) {
+            for (var col = startCol; col < endCol; col++) {
+                var tilePositionX = tile.targetWidth * row;
+                var tilePositionY = tile.targetHeight * col;
+                
+                tilePositionX -= scroll.x;
+                tilePositionY -= scroll.y;
+
+
+                if (this.tileMap[row][col] == 0) {
+                    //c.strokeRect(tilePositionX, tilePositionY, tile.width, tile.heigth);
+                }
+                else {
+                    //c.fillRect(tilePositionX, tilePositionY, tile.width, tile.heigth);
+                    var p = this.getTile(this.tileMap[row][col]);
+                    c.drawImage(this.img, p.offsetX, p.offsetY, this.tile.width, this.tile.heigth, tilePositionX, tilePositionY, this.tile.targetWidth, this.tile.targetHeight);
+                }
+
+            }
+        }
+    }
+
+
+    background.prototype.drawWall = function(positionRow,positionCol, height) {
+        for (var h = 0; h < height; h++) {
+            this.tileMap[positionRow][positionCol-h] = 12;
+        }
+    }
+</script>
+<script type="text/javascript">
+  
+    var scroll = {
+        x: 0,
+        y: 0
+    }
+
+    var scene = {
+        groundLevel: 0,
+        cellingLevel: 0,
+        height: 0,
+        width: 0
+    }
+
+
+
+    var canvas = document.getElementById("myCanvas");
+    var c = canvas.getContext("2d");
+    var console = document.getElementById("myConsole");
+    var sX = document.getElementById("scrollX");
+    var sY = document.getElementById("scrollY");
+    var pp = document.getElementById("Pos");
+
+    var bg = new background();
+
+    window.onload = function () {
+        canvas.width = document.documentElement.clientWidth * 0.9;
+        canvas.height = document.documentElement.clientHeight * 0.9;
+
+        window.addEventListener("keydown", handleKeyDown, false);
+        //initialGrid();
+
+        //initScene();
+        //createGround();
+        //createSceneObj();
+
+
+        bg.initialize();
+        bg.setGround(1, 10, 50, 10);
+        createSceneObj();
+
+        drawScene();
+    }
+
+
+    function initScene() {
+        //initialize scene
+        scene.height = Math.floor(canvas.height / tile.heigth);
+        scene.width = Math.floor(canvas.width / tile.width);
+        scene.groundLevel = tileMap[0].length - 1;
+        scene.cellingLevel = scene.groundLevel - scene.height;
+    }
+
+    function createSceneObj() {
+        bg.drawWall(4, 10, 10);
+        bg.drawWall(5, 10, 9);
+        bg.drawWall(6, 10, 8);
+        bg.drawWall(7, 10, 7);
+        bg.drawWall(5, 10, 6);
+        bg.drawWall(1, 10, 5);
+
+
+        bg.drawWall(5 + 10, 10, 9);
+        bg.drawWall(6 + 10, 10, 8);
+        bg.drawWall(7 + 10, 10, 7);
+        bg.drawWall(5 + 10, 10, 6);
+        bg.drawWall(1 + 10, 10, 5);
+    }
+
+    function createGround() {
+        var length = tileMap[0].length;
+        for (var g = 0; g < length; g++) {
+            tileMap[g][scene.groundLevel] = 1;
+        }
+    }
+
+    function handleKeyDown(e) {
+        switch (e.keyCode) {
+            case Keys.UP:
+                scroll.y -= ((scene.height - 1) * tile.heigth + scroll.y > 0) ? tile.heigth : 0;// prevent the box out of celling
+                break;
+            case Keys.DOWN:
+                scroll.y += ((scroll.y + tile.heigth) <= 0) ? tile.heigth : 0;
+                break;
+            case Keys.LEFT:
+                scroll.x -= ((scroll.x - tile.width/10) >= 0) ? tile.width/10 : 0;
+                break;
+            case Keys.RIGHT:
+                scroll.x += tile.width/10;
+                break;
+        }
+        sX.innerHTML = scroll.x;
+        sY.innerHTML = scroll.y;
+    }
+
+
+    function initialGrid() {
+        var w = grid.width;
+        var h = grid.height;
+
+
+        for (var i = 0; i < w; i++) {
+            tileMap[i] = [];
+            for (var j = 0; j < h; j++) {
+                tileMap[i][j] = 0;
+            }
+        }
+
+    }
+
+    function drawTest() {
+        c.fillStyle = "red";
+        c.fillRect(scroll.x, (scene.height - 1) * tile.heigth + scroll.y, tile.width, tile.heigth);
+        pp.innerHTML = scroll.x;
+        //c.fillRect((canvas.width - tile.width) / 2, (canvas.height - tile.heigth) / 2, 32, 32);
+        c.fillStyle = "blue";
+        c.fillRect(32, 50, 32, 32);
+        c.fillRect(64, 50, 32, 32);
+        c.fillRect(96, 50, 32, 32);
+
+    }
+
+    
+    function drawScene() {
+        //c.fillStyle = "blue";
+        //c.fillRect(0, 0, canvas.width, canvas.height);
+        //c.fillStyle = "black";
+
+        var startRow = Math.floor(scroll.x / tile.width);
+        var startCol = Math.floor(scroll.y / tile.heigth);
+        var endRow = startRow + Math.floor(canvas.width / tile.width) + 1;
+        var endCol = startCol + Math.floor(canvas.height / tile.heigth) + 1;
+
+        bg.drawMap(c, startRow, startCol, endRow, endCol);
+
+        setTimeout(drawScene, 1);
+
+    }
+
+
+
+</script>

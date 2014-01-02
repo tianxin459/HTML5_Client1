@@ -1,0 +1,156 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>G1</title>
+</head>
+<body>
+        <style>
+        #show {
+            background-color: yellow;
+            position: fixed;
+            left: 10px;
+            top: 10px;
+        }
+    </style>
+    <canvas id="myCanvas"></canvas>
+    <div id="show">test</div>
+</body>
+</html>
+<script src="Scripts/Game/RunningPerson.js"></script>
+<script>
+    var canvas = document.getElementById("myCanvas");
+    var c = canvas.getContext("2d");
+    var showscreen = document.getElementById("show");
+    var count = 0;
+
+
+    var Keys = {
+        UP: 38,
+        DOWN: 40,
+        LEFT: 37,
+        RIGHT: 39
+    }
+
+    var p1 = new person();
+    var keyEnableBool = true;
+
+    window.onload = function () {
+        InitCanvas();
+
+        p1.setPosition(100, 150);
+
+        p1.bondary.top = 0;
+        p1.bondary.bottom = canvas.height;
+        p1.bondary.left = 0;
+        p1.bondary.right = canvas.width;
+
+        drawPersonRunning();
+        //listOutFrame(29);
+
+        window.addEventListener("keydown", handleKeyDown, false);
+        window.addEventListener("keyup", handleKeyUp, false);
+        //setTimeout(mark, 5);
+    }
+
+
+    function handleKeyUp(e) {
+        if (e.keyCode == Keys.LEFT || e.keyCode == Keys.RIGHT) {
+            if (p1.status == personStatus.RUNNING) {
+                //p1.setStatus(personStatus.RUNNING);
+                //p1.runningDirection = -1;
+                //p1.accelerateHorizantal = p1.accelerateHorizantal *(-1);
+                p1.setStatus(personStatus.STANDING);
+            }
+            else if (p1.status == personStatus.JUMPPING) {
+                p1.accelerateHorizantal = -1;
+            }
+        }
+    }
+
+    function handleKeyDown(e) {
+        if (keyEnableBool) {
+            switch (e.keyCode) {
+                case Keys.UP:
+                    p1.setStatus(personStatus.JUMPPING);
+                    p1.speedVertical = 20;
+                    break;
+                case Keys.RIGHT:
+                    p1.setStatus(personStatus.RUNNING);
+                    p1.runningDirection = 1;
+                    p1.accelerateHorizantal = 1;
+                    //p1.setDirection(direction.E)
+                    //p1.speedHorizantal = 10;
+                    break;
+                case Keys.LEFT:
+                    p1.setStatus(personStatus.RUNNING);
+                    p1.runningDirection = -1;
+                    p1.accelerateHorizantal = 1;
+                    //p1.setDirection(direction.W)
+                    //p1.speedHorizantal = -10;
+                    break;
+                case Keys.DOWN:
+                    break;
+            }
+        }
+        //showscreen.innerHTML = e.keyCode;
+    }
+
+
+    function InitCanvas() {
+        canvas.width = document.documentElement.clientWidth * 0.9;
+        canvas.height = document.documentElement.clientHeight * 0.9;
+
+        c.fillStyle = "white";
+        c.fillRect(0, 0, canvas.width, canvas.height);
+
+        var img = new Image();
+        img.src = "Images/Sprite/sprite_animation_frames_1.png";
+        img.offsetLeft = 43;
+        img.offsetTop = 1;
+        c.drawImage(img, 1, 1, 41, 50, 100, 100, 40, 50);
+
+    }
+
+    function listOutFrame(a) {
+        for (var i = 0; i < a; i++) {
+            p1.nextFrame();
+            c.drawImage(p1.img, p1.offsetX, p1.offsetY, p1.frame.width, p1.frame.height, p1.position.X + 60 * i, p1.position.Y, p1.frame.width, p1.frame.height);
+        }
+    }
+
+
+    function drawPersonRunning() {
+        c.fillStyle = "white";
+        c.fillRect(0, 0, canvas.width, canvas.height);
+        c.strokeStyle = "brown";
+        c.beginPath();
+        c.moveTo(0, 200);
+        c.lineTo(canvas.width, 190);
+        c.lineWidth = 20;
+        c.stroke();
+
+        p1.animate(c);
+
+
+        c.strokeStyle = "red";
+        c.beginPath();
+        c.moveTo(0, 200);
+        c.lineTo(canvas.width, 190);
+        c.lineWidth = 20;
+        c.stroke();
+
+        showscreen.innerHTML = p1.debug + "|" + p1.speedHorizantal;
+        setTimeout(drawPersonRunning, 50);
+    }
+
+
+
+    function mark() {
+        showscreen.innerHTML = count++;
+        //setTimeout(mark, 50);
+    }
+
+    function detectingClash() {
+        var clash = false;
+    }
+</script>

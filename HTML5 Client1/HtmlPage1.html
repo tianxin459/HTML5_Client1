@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <script type="text/javascript">
+        var canvas;
+        var c;
+        window.onload = function () {
+            canvas = document.getElementById("mainCanvas");
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            c = canvas.getContext('2d');
+
+            c.fillStyle = 'black';
+            c.fillRect(0, 0, canvas.width, canvas.height);
+
+
+            var grd = c.createLinearGradient(0, canvas.height, canvas.width, 0);
+            grd.addColorStop(0, 'black');
+            grd.addColorStop(1, 'white');
+
+            c.fillStyle = grd;
+            c.fillRect(0, 0, canvas.width, canvas.height);
+
+            var phase = "here is something";
+            c.font = 'bold 16px Arial';
+            c.fillStyle = 'white';
+            var phaseSize = c.measureText(phase);
+            c.fillText(phase, (canvas.width - phaseSize.width) / 2, (canvas.height / 2));
+
+
+            window.addEventListener("click", function () {
+                window.addEventListener("click", fw);
+            });
+        }
+
+        /*
+        window.onclick = function () {
+            fadeToWhite(0);
+            window.addEventListener("click", fb);
+        }
+        */
+
+        var fw = function () {
+            fadeToWhite(0);
+            //window.removeEventListener("click", fw);
+            //window.addEventListener("click", fb);
+        }
+        var fb = function () {
+            fadeToBlack(0);
+            //window.removeEventListener("click", fb);
+            //window.addEventListener("click", fw);
+        }
+
+
+
+
+
+        function fadeInAndOut(alphaVal) {
+            var alphaVal = (alphaVal==undefined)?0.08:alphaVal;
+            if (alphaVal <= 1) {
+                /*
+                alphaVal = alphaVal + 0.02;
+                c.fillStyle = 'white';
+                c.globalAlpha = alphaVal;
+                c.fillRect(0, 0, canvas.width, canvas.height);
+                */
+                fadeToWhite(0);
+            }
+            else {
+                fadeToBlack(0);
+            }
+            fadeInAndOut(alphaVal);
+        }
+
+
+        function fadeToBlack(alphaVal) {
+            var alphaVal = (alphaVal == undefined) ? 0.02 : parseFloat(alphaVal) + 0.02;
+            c.fillStyle = 'black';
+            c.globalAlpha = alphaVal;
+            c.fillRect(0, 0, canvas.width, canvas.height);
+            if (alphaVal < 1.0)
+            {
+                setTimeout(function () {
+                    fadeToBlack(alphaVal);
+                }, 100);
+            }
+        }
+
+        function fadeToWhite(alphaVal)
+        {
+            var alphaVal = (alphaVal == undefined) ? 0.02 : parseFloat(alphaVal) + 0.02;
+            c.fillStyle = 'white';
+            c.globalAlpha = alphaVal;
+            c.fillRect(0, 0, canvas.width, canvas.height);
+            if (alphaVal < 0.5)
+            {
+                setTimeout(function () {
+                    fadeToWhite(alphaVal);
+                }, 100)
+            }
+        }
+    </script>
+</head>
+<body>
+    <canvas id="mainCanvas"></canvas>
+</body>
+</html>

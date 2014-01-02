@@ -1,0 +1,21 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <canvas id="myCanvas"></canvas>
+</body>
+</html>
+<script type="text/javascript">
+    var canvas = document.getElementById("myCanvas");
+    var c = canvas.getContext("2d");
+    window.onload = function () {
+        canvas.width = document.documentElement.clientWidth;
+        canvas.height = document.documentElement.clientHeight;
+
+        c.fillStyle = "gray";
+        c.fillRect(0,0,canvas.width,canvas.height)
+
+    }
+</script>

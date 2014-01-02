@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <canvas id="myCanvas"></canvas>
+</body>
+</html>
+<script type="text/javascript">
+
+    var canvas;
+    var c;
+
+    window.onload = function () {
+        canvas = document.getElementById("myCanvas");
+        canvas.height = window.innerHeight;
+        canvas.width = window.innerWidth;
+
+        c = canvas.getContext("2d");
+
+        var grd = c.createLinearGradient(0, canvas.height, canvas.width, 0);
+        grd.addColorStop(0, 'black');
+        grd.addColorStop(0.5, 'red');
+        grd.addColorStop(1, 'white');
+
+        c.fillStyle = grd;
+        c.fillRect(0, 0, canvas.width, canvas.height);
+
+
+        var img = new Image();
+        img.src = "Images/twitter-moon-icon.png";
+
+        var imgOriginalWidth = img.width;
+        img.width = Math.round(canvas.width * 0.3);
+        img.height = Math.round(img.height * img.width / imgOriginalWidth);
+
+        var pic = {
+            img: img,
+            x: (canvas.width / 2) - (img.width / 2),
+            y: (canvas.height / 2) - (img.height / 2)
+        }
+
+
+        fadeInImg(pic,0);
+
+        window.addEventListener("click", function () {
+            fadeOutImg(pic,1);
+        });
+    }
+
+    function fadeInImg(pic,alpha)
+    {
+        alpha = parseFloat(alpha) + 0.02;
+
+        c.globalAlpha = alpha;
+        c.drawImage(pic.img, pic.x, pic.y, pic.img.width, pic.img.height);
+
+        if (alpha < 1)
+        {
+            setTimeout(function () { fadeInImg(pic,alpha) }, 100);
+        }
+    }
+
+
+
+    function fadeOutImg(pic,alpha) {
+
+        var alpha = alpha - 0.02;
+
+        c.clearRect(0, 0, canvas.width, canvas.height);
+        var grd = c.createLinearGradient(0, canvas.height, canvas.width, 0);
+        grd.addColorStop(0, 'black');
+        grd.addColorStop(0.5, 'red');
+        grd.addColorStop(1, 'white');
+
+        c.globalAlpha = 1;
+        c.fillStyle = grd;
+        c.fillRect(0, 0, canvas.width, canvas.height);
+
+        c.globalAlpha = alpha;
+        c.drawImage(pic.img, pic.x, pic.y, pic.img.width, pic.img.height);
+
+        if (alpha > 0.02) {
+            setTimeout(function () { fadeOutImg(pic, alpha) }, 100);
+        }
+        else {
+            c.globalAlpha = 0;
+            c.drawImage(pic.img, pic.x, pic.y, pic.img.width, pic.img.height);
+
+        }
+    }
+
+
+    //fadeout
+    function loop() {
+
+        alpha += delta;
+        if (alpha <= 0 || alpha >= 1) delta = -delta;
+
+        /// clear canvas, set alpha and re-draw image
+        ctx.clearRect(0, 0, demo.width, demo.height);
+        ctx.globalAlpha = alpha;
+        ctx.drawImage(img, 0, 0);
+
+        requestAnimationFrame(loop); // or use setTimeout(loop, 16) in older browsers
+    }
+
+</script>

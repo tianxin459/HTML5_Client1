@@ -1,0 +1,388 @@
+﻿<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <style>
+        #show {
+            background-color: yellow;
+            position: fixed;
+            left: 10px;
+            top: 10px;
+        }
+    </style>
+    <canvas id="myCanvas"></canvas>
+    <div id="show">test</div>
+</body>
+</html>
+<script type="text/javascript">
+    var framePerson = {
+        width: 41,//50,//
+        height: 41,//50,//
+        borderwidth: 1
+    }
+
+    var personStatus = {
+        STANDING: 0,
+        RUNNING: 1,
+        JUMPPING: 2
+    }
+
+
+    var direction = {
+        S: 1,
+        E: 2,
+        W: 3,
+        N: 4
+    }
+
+    var person = function () {
+        this.img = new Image;
+        this.img.src = "Images/Sprite/sprite_animation_frames_1.png";
+        this.frame = framePerson;
+        this.currentframe = 0;
+        this.offsetX = 0;
+        this.offsetY = 0;
+        this.position = { X: 0, Y: 0 };
+        this.frameRow = 0;
+        this.frameCol = 0;
+        this.status = personStatus.STANDING;
+        this.speed = 3;
+        this.runningSpeed = 3;
+        this.running = false;
+        this.runningDirection = direction.E;
+        this.jumppingHight = 50;
+        this.jumppingSpeed = 5;
+        this.jumppingStartY = 0;
+        this.jumppingEndY = 0;
+        this.jumppingProgress = false;
+        this.jumppingUp = false;
+        this.jumppingDown = false;
+        this.transparentObjValue = 200;
+        this.speedVertical = 0;
+        this.speedHorizantal = 0;
+        this.bondary = { top: null, bottom: null, left: null, right: null };
+    }
+
+    person.prototype.setPosition = function (x, y) {
+        this.position.X = (x == undefined) ? 0 : x;
+        this.position.Y = (y == undefined) ? 0 : y;
+    }
+
+    person.prototype.nextFrame = function () {
+        this.currentframe = (this.currentframe + 1) % 29;
+        this.frameRow = Math.floor(this.currentframe / 6);
+        this.frameCol = Math.floor(this.currentframe % 6);
+        this.offsetX = this.frame.width * this.frameCol + this.frame.borderwidth * this.frameCol + this.frame.borderwidth;
+        this.offsetY = this.frame.height * this.frameRow + this.frame.borderwidth * this.frameRow + this.frame.borderwidth;
+    };
+
+    person.prototype.nextPosition = function () {
+        this.position.X = (this.position.X + this.speedHorizantal) % this.bondary.right;
+        this.position.Y = (this.position.Y + this.speedVertical) % this.bondary.bottom;
+    };
+
+
+
+    person.prototype.getCurrentFrame = function () {
+        this.frameRow = Math.floor(this.currentframe / 6);
+        this.frameCol = Math.floor(this.currentframe % 6);
+        this.offsetX = this.frame.width * this.frameCol + this.frame.borderwidth * this.frameCol + this.frame.borderwidth;
+        this.offsetY = this.frame.height * this.frameRow + this.frame.borderwidth * this.frameRow + this.frame.borderwidth;
+
+    };
+
+    person.prototype.running = function (c) {
+        this.nextFrame();
+        c.drawImage(this.img, this.offsetX, this.offsetY, this.frame.width, this.frame.height, this.position.X, this.position.Y, this.frame.width, this.frame.height);
+    };
+
+
+    person.prototype.animate = function (c) {
+        switch (this.status) {
+            case personStatus.RUNNING:
+                this.running = true;
+                this.nextFrame();
+                if (this.runningDirection == direction.E) {
+                    this.position.X += this.runningSpeed;
+                }
+                else {
+                    this.position.X -= this.runningSpeed;
+                }
+                break;
+            case personStatus.STANDING:
+                this.currentframe = 0;
+                this.running = false;
+                this.jumppingProgress = false;
+                break;
+            case personStatus.JUMPPING:
+                if (this.position.Y >= this.jumppingEndY && this.jumppingUp == true) {
+                    if (this.position.Y <= this.jumppingEndY) {
+                        this.position.Y = this.jumppingEndY;
+                        this.jumppingUp = false;
+                        this.jumppingDown = true;
+                    }
+                    else {
+                        this.position.Y -= this.jumppingSpeed;
+                        this.currentframe = 6;
+                    }
+                }
+                else {
+                    if (this.position.Y >= this.jumppingStartY) {
+                        this.position.Y = this.jumppingStartY;
+                        if (this.running)
+                        { this.setStatus(personStatus.RUNNING); }
+                        else {
+                            this.setStatus(personStatus.STANDING);
+                        }
+                    }
+                    else {
+                        this.position.Y += this.jumppingSpeed;
+                        this.currentframe = 11;
+                    }
+                }
+
+                if (this.running) {
+                    if (this.runningDirection == direction.E) {
+                        this.position.X += this.runningSpeed;
+                    }
+                    else {
+                        this.position.X -= this.runningSpeed;
+                    }
+                }
+                break;
+
+        }
+        this.getCurrentFrame();
+        c.drawImage(this.img, this.offsetX, this.offsetY, this.frame.width, this.frame.height, this.position.X, this.position.Y, this.frame.width, this.frame.height);
+    };
+
+    person.prototype.setStatus = function (status) {
+        switch (status) {
+            case personStatus.RUNNING:
+            case personStatus.STANDING:
+                this.status = status;
+                this.jumppingStartY = 0;
+                break;
+            case personStatus.JUMPPING:
+                if (this.jumppingStartY == 0) {
+                    this.jumppingStartY = this.position.Y;
+                    this.jumppingEndY = this.jumppingStartY - this.jumppingHight;
+                    this.currentframe = 5;
+                    this.nextFrame();
+                    this.status = status;
+                    this.jumppingUp = true;
+                }
+                break;
+        }
+    };
+
+    person.prototype.setDirection = function (d) {
+        this.runningDirection = d;
+    };
+
+    person.prototype.standingSolid = function (c) {
+        var x = this.position.X + Math.floor(this.frame.width / 2);
+        var y = this.position.Y + this.frame.height+1;
+        var inTheGround = 0;
+        var i;
+        var divition;
+        var cc = this.colorHexToRGB(c.fillStyle);
+
+        var imgData = c.getImageData(x, y, 1, 1);
+        for (i = 0; i < imgData.data.length; i += 4)
+        {
+            imgData.data[i] = imgData.data[i];
+            imgData.data[i+1] = imgData.data[i+1];
+            imgData.data[i+2] = imgData.data[i+2];
+            inTheGround +=imgData.data[i+3];
+        }
+
+        var isbgColor = this.compareRGBColor(cc, imgData.data);
+
+        divition = i / 4;
+        inTheGround = inTheGround / ((divition == 0) ? 1 : divition);
+        //c.putImageData(imgData, x, y);
+        return !isbgColor && (inTheGround > this.transparentObjValue);
+    };
+
+    person.prototype.compareRGBColor = function (colorArray1, colorArray2) {
+        var sameColor = false;
+        if (colorArray1.length != colorArray2.length)
+            return false;
+
+        for (var i = 0; i < colorArray1.length; i+=4)
+        {
+            sameColor = colorArray1[i] == colorArray2[i] && colorArray1[i + 1] == colorArray2[i + 1] && colorArray1[i + 2] == colorArray2[i + 2];
+            if (!sameColor)
+                return false;
+        }
+        return sameColor;
+    };
+
+
+    person.prototype.colorHexToRGB = function(color) {
+        color = color.toUpperCase();
+        var regexpHex = /^#[0-9a-fA-F]{3,6}$/;//Hex  
+        if (regexpHex.test(color)) {
+            var hexArray = new Array();
+            var count = 1;
+            for (var i = 1; i <= 3; i++) {
+                if (color.length - 2 * i > 3 - i) {
+                    hexArray.push(Number("0x" + color.substring(count, count + 2)));
+                    count += 2;
+                } else {
+                    hexArray.push(Number("0x" + color.charAt(count) + color.charAt(count)));
+                    count += 1;
+                }
+            }
+            hexArray.push(255);//alpha
+            return hexArray;//"RGB(" + hexArray.join(",") + ")";
+        } else {
+            return color;
+        }
+    };
+</script>
+
+<script type="text/javascript">
+    var canvas = document.getElementById("myCanvas");
+    var c = canvas.getContext("2d");
+    var showscreen = document.getElementById("show");
+    var count = 0;
+
+
+    var Keys = {
+        UP: 38,
+        DOWN: 40,
+        LEFT: 37,
+        RIGHT: 39
+    }
+
+    var p1 = new person();
+    var keyEnableBool = true;
+
+    window.onload = function () {
+        InitCanvas();
+
+        p1.setPosition(100, 150);
+
+        p1.bondary.top = 0;
+        p1.bondary.bottom = canvas.height;
+        p1.bondary.left = 0;
+        p1.bondary.right = canvas.width;
+
+        drawPersonRunning();
+        //listOutFrame(29);
+
+        window.addEventListener("keydown", handleKeyDown, false);
+        window.addEventListener("keyup", handleKeyUp, false);
+        //setTimeout(mark, 5);
+    }
+
+
+    function handleKeyUp(e) {
+        if (p1.status == personStatus.RUNNING) {
+            p1.setStatus(personStatus.STANDING);
+        }
+    }
+
+    function handleKeyDown(e) {
+        if (keyEnableBool) {
+            switch (e.keyCode) {
+                case Keys.UP:
+                    p1.setStatus(personStatus.JUMPPING);
+                    break;
+                case Keys.DOWN:
+                    p1.setStatus(personStatus.JUMPPING);
+
+                    break;
+                case Keys.LEFT:
+                    p1.setStatus(personStatus.RUNNING)
+                    p1.setDirection(direction.W)
+                    break;
+                case Keys.RIGHT:
+                    p1.setStatus(personStatus.RUNNING)
+                    p1.setDirection(direction.E)
+                    break;
+            }
+        }
+        showscreen.innerHTML = e.keyCode;
+    }
+
+
+    function InitCanvas() {
+        canvas.width = document.documentElement.clientWidth * 0.9;
+        canvas.height = document.documentElement.clientHeight * 0.9;
+
+        c.fillStyle = "white";
+        c.fillRect(0, 0, canvas.width, canvas.height);
+
+        var img = new Image();
+        img.src = "Images/Sprite/sprite_animation_frames_1.png";
+        img.offsetLeft = 43;
+        img.offsetTop = 1;
+        c.drawImage(img, 1, 1, 41, 50, 100, 100, 40, 50);
+
+    }
+
+    function listOutFrame(a)
+    {
+        for (var i = 0; i < a; i++)
+        {
+            p1.nextFrame();
+            c.drawImage(p1.img, p1.offsetX, p1.offsetY, p1.frame.width, p1.frame.height, p1.position.X + 60*i, p1.position.Y, p1.frame.width, p1.frame.height);
+        }  
+    }
+
+
+    function drawPersonRunning() {
+        c.fillStyle = "white";
+        c.fillRect(0, 0, canvas.width, canvas.height);
+        p1.animate(c);
+        
+        // showscreen.innerHTML = p1.currentframe + " x" + p1.position.X + " y" + p1.offsetY;
+        //showscreen.innerHTML = " x" + p1.position.X ;
+
+        c.strokeStyle = "red";
+        c.beginPath();
+        c.moveTo(0, 192);
+        c.lineTo(canvas.width, 190);
+        c.lineWidth = 3;
+        c.stroke();
+
+        
+        showscreen.innerHTML = p1.standingSolid(c);
+
+        //showscreen.innerHTML = p1.status;
+        setTimeout(drawPersonRunning, 50);
+        //mark();
+    }
+
+
+    function drawPersonJumping() {
+        c.fillStyle = "white";
+        c.fillRect(0, 0, canvas.width, canvas.height);
+        p1.nextFrame();
+        //p1.position.X = (p1.position.X+3)%canvas.width;
+        //c.drawImage(p1.img, p1.offsetX, p1.offsetY, p1.frame.width, p1.frame.height, p1.position.X, p1.position.Y, p1.frame.width, p1.frame.height);
+        //c.drawImage(p1.img, p1.offsetX, p1.offsetY, p1.frame.width, p1.frame.height, p1.position.X+30, p1.position.Y+100, p1.frame.width, p1.frame.height);
+        //c.drawImage(p1.img, p1.offsetX, p1.offsetY, p1.frame.width, p1.frame.height, p1.position.X-30, p1.position.Y + 200, p1.frame.width, p1.frame.height);
+
+        // showscreen.innerHTML = p1.currentframe + " x" + p1.position.X + " y" + p1.offsetY;
+        showscreen.innerHTML = " x" + p1.position.X;
+
+        setTimeout(drawPersonRunning, 50);
+        //mark();
+    }
+
+    function mark() {
+        showscreen.innerHTML = count++;
+        //setTimeout(mark, 50);
+    }
+
+    function detectingClash() {
+        var clash = false;
+    }
+</script>
